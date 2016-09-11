@@ -10,10 +10,12 @@ fn main(expr: &str) -> i32 {
       }
       // xxxFlorent: Any way to destructure like this? Not sure of what I am doing below
       // let [ operand1, operand2 ] = stack.drain((token.len() - 3)..).collect();
-      let operand1 = stack.pop().expect("expected i32 values only in stack");
       let operand2 = stack.pop().expect("expected i32 values only in stack");
+      let operand1 = stack.pop().expect("expected i32 values only in stack");
       result += match token {
         "+" => operand1 + operand2,
+        "-" => operand1 - operand2,
+        "*" => operand1 * operand2,
         _ => panic!("Unsupported operator")
       }
     } else {
@@ -31,6 +33,18 @@ fn main(expr: &str) -> i32 {
 fn it_adds() {
   let result = main("1 2 +");
   assert_eq!(result, 3);
+}
+
+#[test]
+fn it_substracts() {
+  let result = main("1 2 -");
+  assert_eq!(result, -1);
+}
+
+#[test]
+fn it_multiplies() {
+  let result = main("6 7 *");
+  assert_eq!(result, 42);
 }
 
 #[test]
