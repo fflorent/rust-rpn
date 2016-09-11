@@ -1,5 +1,4 @@
 fn main(expr: &str) -> f32 {
-  let mut result = 0.0;
   let mut stack:Vec<f32> = Vec::new();
   for token in expr.split_whitespace() {
     let wrapped_operand = token.parse::<f32>();
@@ -12,22 +11,24 @@ fn main(expr: &str) -> f32 {
       // let [ operand1, operand2 ] = stack.drain((token.len() - 3)..).collect();
       let operand2 = stack.pop().expect("expected f32 values only in stack");
       let operand1 = stack.pop().expect("expected f32 values only in stack");
-      result += match token {
+      let result = match token {
         "+" => operand1 + operand2,
         "-" => operand1 - operand2,
         "*" => operand1 * operand2,
         "/" => operand1 / operand2,
         _ => panic!("Unsupported operator")
-      }
+      };
+      stack.push(result);
+      println!("{}", result);
     } else {
       stack.push(wrapped_operand.unwrap());
     }
   }
 
-  if stack.len() > 0 {
+  if stack.len() != 1 {
     panic!("Remaining untreated operands. Probably missing operator.");
   }
-  return result;
+  return stack.pop().expect("expected a f32 value remaining in stack");
 }
 
 #[test]
@@ -52,6 +53,13 @@ fn it_multiplies() {
 fn it_divides() {
   let result = main("1 2 /");
   assert_eq!(result, 0.5);
+}
+
+#[test]
+fn it_calculates_complex_expressions() {
+  // ((1+2) * 8 / (5-1) - 1) / 2
+  let result = main("1 2 + 8 * 5 1 - / 1 - 2 /");
+  assert_eq!(result, 2.5);
 }
 
 #[test]
