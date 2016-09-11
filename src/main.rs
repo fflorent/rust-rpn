@@ -19,7 +19,6 @@ fn main(expr: &str) -> f32 {
         _ => panic!("Unsupported operator")
       };
       stack.push(result);
-      println!("{}", result);
     } else {
       stack.push(wrapped_operand.unwrap());
     }
@@ -63,9 +62,15 @@ fn it_calculates_complex_expressions() {
 }
 
 #[test]
+fn it_allows_multiple_shitespaces() {
+  let result = main("1  2 +\t3 -");
+  assert_eq!(result, 0.0);
+}
+
+#[test]
 #[should_panic]
-fn it_panics_for_unsupported_operators() {
-  main("1 2 =");
+fn it_panics_for_unsupported_characters() {
+  main("1 2 t");
   // xxxFlorent: How to test the panic message is right?
 }
 
