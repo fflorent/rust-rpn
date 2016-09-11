@@ -1,0 +1,6 @@
+[package]
+name = "rpl"
+version = "0.1.0"
+authors = ["Florent FAYOLLE <florent.fayolle69@gmail.com>"]
+
+[dependencies]
