@@ -15,7 +15,7 @@ fn main() {
     if input.trim() == "quit" {
       break;
     }
-    let result = rpl(&input);
+    let result = rpn(&input);
     if result.is_err() {
       println!("Error: {}", result.unwrap_err());
     } else {
@@ -24,7 +24,7 @@ fn main() {
   }
 }
 
-fn rpl(expr: &str) -> Result<f32, &str> {
+fn rpn(expr: &str) -> Result<f32, &str> {
   let mut stack:Vec<f32> = Vec::new();
   for token in expr.split_whitespace() {
     let wrapped_operand = token.parse::<f32>();
@@ -59,56 +59,56 @@ fn rpl(expr: &str) -> Result<f32, &str> {
 
 #[test]
 fn it_adds() {
-  let result = rpl("1 2 +");
+  let result = rpn("1 2 +");
   assert_eq!(result.unwrap(), 3.0);
 }
 
 #[test]
 fn it_substracts() {
-  let result = rpl("1 2 -");
+  let result = rpn("1 2 -");
   assert_eq!(result.unwrap(), -1.0);
 }
 
 #[test]
 fn it_multiplies() {
-  let result = rpl("6 7 *");
+  let result = rpn("6 7 *");
   assert_eq!(result.unwrap(), 42.0);
 }
 
 #[test]
 fn it_divides() {
-  let result = rpl("1 2 /");
+  let result = rpn("1 2 /");
   assert_eq!(result.unwrap(), 0.5);
 }
 
 #[test]
 fn it_calculates_complex_expressions() {
   // ((1+2) * 8 / (5-1) - 1) / 2
-  let result = rpl("1 2 + 8 * 5 1 - / 1 - 2 /");
+  let result = rpn("1 2 + 8 * 5 1 - / 1 - 2 /");
   assert_eq!(result.unwrap(), 2.5);
 }
 
 #[test]
 fn it_allows_multiple_shitespaces() {
-  let result = rpl("1  2 +\t3 -");
+  let result = rpn("1  2 +\t3 -");
   assert_eq!(result.unwrap(), 0.0);
 }
 
 #[test]
 fn it_panics_for_unsupported_characters() {
-  let result = rpl("1 2 t");
+  let result = rpn("1 2 t");
   assert_eq!(result.unwrap_err(), "Unsupported operator");
 }
 
 #[test]
 fn it_panics_for_unsufficient_operands() {
-  let result = rpl("1 +");
+  let result = rpn("1 +");
   assert_eq!(result.unwrap_err(), "Unsufficient operands before operator");
 }
 
 #[test]
 fn it_panics_for_unsufficient_operators() {
-  let result = rpl("1 2 3 +");
+  let result = rpn("1 2 3 +");
   assert_eq!(result.unwrap_err(),
     "Remaining untreated operands. Probably missing operator.");
 }
