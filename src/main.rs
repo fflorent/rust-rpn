@@ -1,5 +1,14 @@
 fn main(expr: &str) -> i32 {
-  return 0; // Let's return dummy values first.
+  let result = 0;
+  for c in expr.chars() {
+    match c {
+      '0' ... '9' => println!("number"),
+      ' ' => println!("space"),
+      '+' => println!("plus"),
+      _ => panic!("unsupported character")
+    }
+  }
+  return result;
 }
 
 #[test]
