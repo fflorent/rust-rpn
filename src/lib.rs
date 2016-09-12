@@ -9,9 +9,10 @@
 ///
 /// # Errors
 /// This function will return an error in case of bad expression:
+///
 /// - if it includes an unrecognized operator (recognized ones are +, -, * and /
-/// - a missing operand (i.e. value)
-/// - a missing operator
+/// - if it misses an operand (i.e. value)
+/// - if it misses an operator
 pub fn evaluate(expr: &str) -> Result<f32, &str> {
   let mut stack:Vec<f32> = Vec::new();
   for token in expr.split_whitespace() {
