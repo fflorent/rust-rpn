@@ -2,7 +2,8 @@ enum Operator {
   Addition,
   Substraction,
   Multiplication,
-  Division
+  Division,
+  Modulo
 }
 
 enum OperationElt {
@@ -18,6 +19,7 @@ fn tokenizer(expr: &str) -> Result<Vec<OperationElt>, String> {
         "-" => Ok(OperationElt::Operator(Operator::Substraction)),
         "*" => Ok(OperationElt::Operator(Operator::Multiplication)),
         "/" => Ok(OperationElt::Operator(Operator::Division)),
+        "%" => Ok(OperationElt::Operator(Operator::Modulo)),
         operand => match operand.parse::<f32>() {
           Ok(val) => Ok(OperationElt::Operand(val)),
           Err(_) => Err(format!("Cannot parse operand \"{}\"", operand))
@@ -60,7 +62,8 @@ pub fn evaluate(expr: &str) -> Result<f32, String> {
               Operator::Addition        => operand1 + operand2,
               Operator::Substraction    => operand1 - operand2,
               Operator::Multiplication  => operand1 * operand2,
-              Operator::Division        => operand1 / operand2
+              Operator::Division        => operand1 / operand2,
+              Operator::Modulo          => operand1 % operand2
             };
             stack.push(result);
           },
@@ -101,9 +104,15 @@ fn it_divides() {
 }
 
 #[test]
+fn it_modulos() {
+  let result = evaluate("4 2 %");
+  assert_eq!(result.unwrap(), 0.0);
+}
+
+#[test]
 fn it_evaluates_complex_expressions() {
-  // ((1+2) * 8 / (5-1) - 1) / 2
-  let result = evaluate("1 2 + 8 * 5 1 - / 1 - 2 /");
+  // ((1+2) * 8 / (5-1) - 4 % 3) / 2
+  let result = evaluate("1 2 + 8 * 5 1 - / 4 3 % - 2 /");
   assert_eq!(result.unwrap(), 2.5);
 }
 
