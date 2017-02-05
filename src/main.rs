@@ -17,10 +17,9 @@ fn main() {
       break;
     }
     let result = rpn::evaluate(&input);
-    if result.is_err() {
-      println!("Error: {}", result.unwrap_err());
-    } else {
-      println!("{}", result.unwrap());
+    match result {
+      Err(err) => println!("Error: {}", err),
+      Ok(res) => println!("{}", res)
     }
   }
 }

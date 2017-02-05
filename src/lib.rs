@@ -1,3 +1,33 @@
+enum Operator {
+  Addition,
+  Substraction,
+  Multiplication,
+  Division
+}
+
+enum OperationElt {
+  Operator(Operator),
+  Operand(f32)
+}
+
+fn tokenizer(expr: &str) -> Result<Vec<OperationElt>, String> {
+  expr.split_whitespace()
+    .map(|el| {
+      match el {
+        "+" => Ok(OperationElt::Operator(Operator::Addition)),
+        "-" => Ok(OperationElt::Operator(Operator::Substraction)),
+        "*" => Ok(OperationElt::Operator(Operator::Multiplication)),
+        "/" => Ok(OperationElt::Operator(Operator::Division)),
+        operand => match operand.parse::<f32>() {
+          Ok(val) => Ok(OperationElt::Operand(val)),
+          Err(_) => Err(format!("Cannot parse operand \"{}\"", operand))
+        }
+      }
+    })
+    .into_iter()
+    .collect()
+}
+
 /// Evaluates an RPL expression.
 ///
 /// # Examples
@@ -5,6 +35,7 @@
 /// extern crate rpn;
 ///
 /// let result:f32 = rpn::evaluate("5 2 +").unwrap();
+/// assert_eq!(result, 7.0);
 /// ````
 ///
 /// # Errors
@@ -13,37 +44,36 @@
 /// - if it includes an unrecognized operator (recognized ones are +, -, * and /
 /// - if it misses an operand (i.e. value)
 /// - if it misses an operator
-pub fn evaluate(expr: &str) -> Result<f32, &str> {
-  let mut stack:Vec<f32> = Vec::new();
-  for token in expr.split_whitespace() {
-    let wrapped_operand = token.parse::<f32>();
-    let is_operator = wrapped_operand.is_err();
-    if is_operator {
-      if stack.len() < 2 {
-        return Err("Unsufficient operands before operator");
+pub fn evaluate(expr: &str) -> Result<f32, String> {
+  return match tokenizer(expr) {
+    Ok(tokens) => {
+      let mut stack:Vec<f32> = Vec::new();
+      for token in tokens {
+        match token {
+          OperationElt::Operator(operator) => {
+            if stack.len() < 2 {
+              return Err("Unsufficient operands before operator".to_string());
+            }
+            let operand2 = stack.pop().expect("expected f32 values in stack");
+            let operand1 = stack.pop().expect("expected f32 values in stack");
+            let result = match operator {
+              Operator::Addition        => operand1 + operand2,
+              Operator::Substraction    => operand1 - operand2,
+              Operator::Multiplication  => operand1 * operand2,
+              Operator::Division        => operand1 / operand2
+            };
+            stack.push(result);
+          },
+          OperationElt::Operand(val) => stack.push(val)
+        }
       }
-      // xxxFlorent: Any way to destructure like this? Not sure of what I am
-      // doing below
-      // let [ operand1, operand2 ] = stack.drain((token.len() - 3)..).collect();
-      let operand2 = stack.pop().expect("expected f32 values in stack");
-      let operand1 = stack.pop().expect("expected f32 values in stack");
-      let result = match token {
-        "+" => operand1 + operand2,
-        "-" => operand1 - operand2,
-        "*" => operand1 * operand2,
-        "/" => operand1 / operand2,
-        _ => return Err("Unsupported operator")
-      };
-      stack.push(result);
-    } else {
-      stack.push(wrapped_operand.unwrap());
-    }
+      if stack.len() != 1 {
+        return Err("Remaining untreated operands. Probably missing operator.".to_string());
+      }
+      return Ok(stack.pop().expect("expected a f32 value remaining in stack"));
+    },
+    Err(err) => Err(err)
   }
-
-  if stack.len() != 1 {
-    return Err("Remaining untreated operands. Probably missing operator.");
-  }
-  return Ok(stack.pop().expect("expected a f32 value remaining in stack"));
 }
 
 #[test]
@@ -84,19 +114,19 @@ fn it_allows_multiple_shitespaces() {
 }
 
 #[test]
-fn it_panics_for_unsupported_characters() {
+fn it_fails_for_unsupported_characters() {
   let result = evaluate("1 2 t");
-  assert_eq!(result.unwrap_err(), "Unsupported operator");
+  assert_eq!(result.unwrap_err(), "Cannot parse operand \"t\"");
 }
 
 #[test]
-fn it_panics_for_unsufficient_operands() {
+fn it_fails_for_unsufficient_operands() {
   let result = evaluate("1 +");
   assert_eq!(result.unwrap_err(), "Unsufficient operands before operator");
 }
 
 #[test]
-fn it_panics_for_unsufficient_operators() {
+fn it_fails_for_unsufficient_operators() {
   let result = evaluate("1 2 3 +");
   assert_eq!(result.unwrap_err(),
     "Remaining untreated operands. Probably missing operator.");
